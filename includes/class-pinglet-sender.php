@@ -88,7 +88,13 @@ class Pinglet_Sender {
 			return new WP_Error( 'pinglet_encode_failed', __( 'Could not encode the notification payload.', 'pinglet' ) );
 		}
 
-		$url = self::API_BASE . '/' . rawurlencode( $settings['namespace'] ) . '/' . rawurlencode( $topic );
+		/**
+		 * Filters the Pinglet API base URL. Intended for tests and staging.
+		 *
+		 * @param string $base The base URL, no trailing slash.
+		 */
+		$base = apply_filters( 'pinglet_api_base', self::API_BASE );
+		$url  = rtrim( $base, '/' ) . '/' . rawurlencode( $settings['namespace'] ) . '/' . rawurlencode( $topic );
 
 		$response = wp_remote_post(
 			$url,
