@@ -91,6 +91,7 @@ class Pinglet_Elementor {
 				'title'   => __( 'New Elementor form submission', 'pinglet' ),
 				'message' => $message,
 				'level'   => 'info',
+				'data'    => pinglet_extract_metadata( $pairs ),
 			)
 		);
 	}

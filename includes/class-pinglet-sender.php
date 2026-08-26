@@ -21,6 +21,9 @@ class Pinglet_Sender {
 	const MAX_BADGES             = 3;
 	const MAX_BADGE_KEY_LENGTH   = 24;
 	const MAX_BADGE_VALUE_LENGTH = 32;
+	const MAX_DATA_PAIRS         = 10;
+	const MAX_DATA_KEY_LENGTH    = 64;
+	const MAX_DATA_VALUE_LENGTH  = 256;
 
 	/**
 	 * Send a push notification.
@@ -80,6 +83,16 @@ class Pinglet_Sender {
 			$badges = self::sanitize_badges( $args['badges'] );
 			if ( ! empty( $badges ) ) {
 				$payload['badges'] = $badges;
+			}
+		}
+
+		// Metadata for the detail sheet (Pro plans; the API drops it on free
+		// plans and the message still delivers). The app renders known keys
+		// richly, e.g. an email value becomes a tappable mailto: link.
+		if ( ! empty( $args['data'] ) && is_array( $args['data'] ) ) {
+			$data = self::sanitize_data( $args['data'] );
+			if ( ! empty( $data ) ) {
+				$payload['data'] = $data;
 			}
 		}
 
@@ -167,6 +180,40 @@ class Pinglet_Sender {
 			}
 
 			$value = pinglet_truncate( sanitize_text_field( (string) $value ), self::MAX_BADGE_VALUE_LENGTH );
+			if ( '' === $value ) {
+				continue;
+			}
+
+			$clean[ $key ] = $value;
+		}
+
+		return $clean;
+	}
+
+	/**
+	 * Clamp metadata to the API limits: keys at most 64 characters, string
+	 * values at most 256, scalars only, capped at a sane number of pairs.
+	 *
+	 * @param array $data Raw metadata pairs.
+	 * @return array
+	 */
+	public static function sanitize_data( $data ) {
+		$clean = array();
+
+		foreach ( $data as $key => $value ) {
+			if ( count( $clean ) >= self::MAX_DATA_PAIRS ) {
+				break;
+			}
+			if ( ! is_scalar( $value ) ) {
+				continue;
+			}
+
+			$key = pinglet_truncate( sanitize_text_field( (string) $key ), self::MAX_DATA_KEY_LENGTH );
+			if ( '' === $key || pinglet_is_sensitive_key( $key ) ) {
+				continue;
+			}
+
+			$value = pinglet_truncate( sanitize_text_field( (string) $value ), self::MAX_DATA_VALUE_LENGTH );
 			if ( '' === $value ) {
 				continue;
 			}
@@ -278,4 +325,59 @@ function pinglet_summarize_fields( $fields, $max_fields = 8, $max_value = 200 ) 
 	}
 
 	return implode( "\n", $lines );
+}
+
+/**
+ * Pull well-known contact details out of submitted fields for the metadata
+ * bag. The Pinglet app renders these richly on the detail sheet, e.g. an
+ * email value becomes a tappable mailto: link.
+ *
+ * Detection is by value first (a valid email address wins regardless of the
+ * field name), then by key name for name, phone, subject and website fields.
+ *
+ * @param array $fields Flat label => value map.
+ * @return array Flat metadata map, possibly empty.
+ */
+function pinglet_extract_metadata( $fields ) {
+	$meta = array();
+
+	foreach ( $fields as $key => $value ) {
+		$key = (string) $key;
+		if ( '' === $key || pinglet_is_sensitive_key( $key ) ) {
+			continue;
+		}
+
+		if ( is_array( $value ) ) {
+			$value = reset( $value );
+		}
+		if ( ! is_scalar( $value ) ) {
+			continue;
+		}
+		$value = trim( sanitize_text_field( (string) $value ) );
+		if ( '' === $value ) {
+			continue;
+		}
+
+		if ( ! isset( $meta['email'] ) && is_email( $value ) ) {
+			$meta['email'] = $value;
+			continue;
+		}
+		if ( ! isset( $meta['name'] ) && preg_match( '/(^|[_-])(your-?)?(full-?)?name$/i', $key ) ) {
+			$meta['name'] = $value;
+			continue;
+		}
+		if ( ! isset( $meta['phone'] ) && preg_match( '/(phone|mobile|(^|[_-])tel)/i', $key ) ) {
+			$meta['phone'] = $value;
+			continue;
+		}
+		if ( ! isset( $meta['subject'] ) && preg_match( '/subject/i', $key ) ) {
+			$meta['subject'] = $value;
+			continue;
+		}
+		if ( ! isset( $meta['website'] ) && preg_match( '/(website|site[_-]?url|homepage)/i', $key ) && false !== filter_var( $value, FILTER_VALIDATE_URL ) ) {
+			$meta['website'] = $value;
+		}
+	}
+
+	return $meta;
 }

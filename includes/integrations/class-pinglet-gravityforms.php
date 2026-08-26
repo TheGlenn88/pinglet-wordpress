@@ -96,6 +96,7 @@ class Pinglet_GravityForms {
 				'title'   => __( 'New Gravity Forms submission', 'pinglet' ),
 				'message' => $message,
 				'level'   => 'info',
+				'data'    => pinglet_extract_metadata( $pairs ),
 			)
 		);
 	}

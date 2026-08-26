@@ -95,6 +95,7 @@ class Pinglet_CF7 {
 				'title'   => __( 'New contact form submission', 'pinglet' ),
 				'message' => $message,
 				'level'   => 'mail_failed' === $status ? 'warning' : 'info',
+				'data'    => pinglet_extract_metadata( $posted ),
 			)
 		);
 	}

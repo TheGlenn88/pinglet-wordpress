@@ -86,6 +86,7 @@ class Pinglet_WPForms {
 				'title'   => __( 'New WPForms submission', 'pinglet' ),
 				'message' => $message,
 				'level'   => 'info',
+				'data'    => pinglet_extract_metadata( $pairs ),
 			)
 		);
 	}
