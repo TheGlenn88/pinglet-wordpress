@@ -2,7 +2,7 @@
 Contributors: pinglet
 Tags: push notifications, notifications, forms, woocommerce, contact form 7
 Requires at least: 5.8
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -65,6 +65,22 @@ A short summary of up to 8 fields is included in the notification body. Fields w
 = Can other plugins send notifications? =
 
 Yes. Call pinglet_notify( $args ) or fire do_action( 'pinglet_send', $args ). Supported keys: message (required), title, level (info, success, warning, error), priority (silent, normal, urgent), badges (up to 3 key/value pairs) and topic (to override the default).
+
+== External services ==
+
+This plugin connects to the Pinglet API (https://pinglet.dev), a push notification service run by Bitnix Limited, to deliver notifications to the phones subscribed to your Pinglet topic. It is required for the plugin to work.
+
+A request is sent to https://pinglet.dev/{your namespace}/{topic} only when one of these happens:
+
+* A visitor submits a form handled by an integration you have switched on (Contact Form 7, WPForms, Gravity Forms or Elementor Pro).
+* A WooCommerce order reaches the processing status, if the WooCommerce integration is switched on.
+* You press "Send test notification" on the settings page.
+* Your own code, or another plugin, calls pinglet_notify() or fires the pinglet_send action.
+
+Each request carries your Pinglet API key and the notification itself: a title, a message and optional badges. For form submissions the message includes a short summary of up to 8 submitted fields, and the submitter's name, email address, phone number, subject and website, when the form has them, are attached as metadata. Fields that look sensitive (password, card, cvv and similar) are never sent. For WooCommerce orders the plugin sends the order number, total and item count. Nothing is sent when no integration fires.
+
+Pinglet terms of service: https://pinglet.dev/terms/
+Pinglet privacy policy: https://pinglet.dev/privacy/
 
 == Changelog ==
 

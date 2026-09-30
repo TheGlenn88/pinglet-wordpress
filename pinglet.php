@@ -99,16 +99,6 @@ function pinglet_notify( $args ) {
 add_action( 'pinglet_send', 'pinglet_notify', 10, 1 );
 
 /**
- * Load the translation files.
- *
- * @return void
- */
-function pinglet_load_textdomain() {
-	load_plugin_textdomain( 'pinglet', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-}
-add_action( 'init', 'pinglet_load_textdomain' );
-
-/**
  * Boot the admin screens and the integrations.
  *
  * Runs on plugins_loaded so that "is the source plugin active" checks
