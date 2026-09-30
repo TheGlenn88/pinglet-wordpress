@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Pinglet
- * Plugin URI: https://pinglet.dev
+ * Plugin URI: https://github.com/TheGlenn88/pinglet-wordpress
  * Description: Get a push notification on your phone when someone submits a form on your WordPress site or places a WooCommerce order. Powered by Pinglet, the webhook-to-push service.
  * Version: 1.0.0
  * Requires at least: 5.8
