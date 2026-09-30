@@ -1,5 +1,5 @@
 === Pinglet ===
-Contributors: pinglet
+Contributors: theglenn88
 Tags: push notifications, notifications, forms, woocommerce, contact form 7
 Requires at least: 5.8
 Tested up to: 7.1
